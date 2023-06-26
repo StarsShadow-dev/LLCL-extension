@@ -1,6 +1,6 @@
 {
 	"name": "parallel",
-	"description": "Parallel extension for VS Code",
+	"description": "extension for VS Code",
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.74.0"
