@@ -14,6 +14,9 @@
 					"include": "#keyword"
 				},
 				{
+					"include": "#control_keyword"
+				},
+				{
 					"include": "#number"
 				},
 
@@ -27,6 +30,9 @@
 
 				{
 					"include": "#line_comment"
+				},
+				{
+					"include": "#block_comment"
 				},
 				{
 					"include": "#operator"
@@ -47,7 +53,7 @@
 		},
 		"control_keyword": {
 			"name": "keyword.control.parallel",
-			"match": "\\s*(function|return|var|import|if)"
+			"match": "\\s*(function|return|var|import|if|struct)"
 		},
 
 		"name": {
@@ -78,6 +84,22 @@
 				}
 			},
 			"end": "\n",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.comment.parallel"
+				}
+			}
+		},
+		"block_comment": {
+			"name": "comment.block.parallel",
+
+			"begin": "\/[*]",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.comment.parallel"
+				}
+			},
+			"end": "[*](\/)",
 			"endCaptures": {
 				"0": {
 					"name": "punctuation.definition.comment.parallel"
