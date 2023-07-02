@@ -1,7 +1,10 @@
 {
 	"name": "parallel",
+	"displayName": "Parallel-lang VS Code Extension",
 	"description": "extension for VS Code",
 	"version": "0.0.1",
+	"publisher": "StarsShadow-dev",
+	"repository": "https://github.com/StarsShadow-dev/Parallel-lang-extension",
 	"engines": {
 		"vscode": "^1.74.0"
 	},
@@ -24,5 +27,8 @@
 			}
 		]
 	},
-	"scripts": {}
+	"scripts": {},
+	"devDependencies": {
+		"@types/vscode": "^1.73.0"
+	}
 }
