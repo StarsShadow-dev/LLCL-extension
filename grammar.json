@@ -35,10 +35,11 @@
 					"include": "#block_comment"
 				},
 				{
-					"include": "#operator"
-				},
-				{
 					"include": "#double_quote_string"
+				},
+
+				{
+					"include": "#operator"
 				},
 
 				{
@@ -53,7 +54,7 @@
 		},
 		"control_keyword": {
 			"name": "keyword.control.parallel",
-			"match": "\\s*(function|return|var|import|if|struct)"
+			"match": "\\s*(function|return|var|import|if|while|struct|new|public)"
 		},
 
 		"name": {
@@ -74,6 +75,7 @@
 				}
 			}
 		},
+
 		"line_comment": {
 			"name": "comment.line.parallel",
 
@@ -106,10 +108,7 @@
 				}
 			}
 		},
-		"operator": {
-			"name": "keyword.operator.arithmetic.parallel",
-			"match": "(\\+|\\-|\\*|\\/)"
-		},
+
 		"double_quote_string": {
 			"name": "string.quoted.double.parallel",
 
@@ -125,6 +124,11 @@
 					"name": "punctuation.definition.string.end.parallel"
 				}
 			}
+		},
+
+		"operator": {
+			"name": "keyword.operator.arithmetic.parallel",
+			"match": "(\\+|\\-|\\*|\\/)"
 		},
 
 		"semicolon": {
