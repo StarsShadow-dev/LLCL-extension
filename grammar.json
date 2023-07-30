@@ -53,8 +53,12 @@
 			"match": "(true|false)"
 		},
 		"control_keyword": {
-			"name": "keyword.control.parallel",
-			"match": "\\s*(function|return|var|import|if|while|struct|new|public)"
+			"match": "\\s*(function|return|var|import|if|while|struct|new|public)[ \t\n;]",
+			"captures": {
+				"1": {
+					"name": "keyword.control.parallel"
+				}
+			}
 		},
 
 		"name": {
