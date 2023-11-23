@@ -57,7 +57,7 @@
 			"match": "(true|false)"
 		},
 		"control_keyword": {
-			"match": "(function|return|var|import|if|else|while|struct|public)[ \t\n;]",
+			"match": "(function|macro|return|var|import|if|else|while|struct|impl|public)[ \t\n;]",
 			"captures": {
 				"1": {
 					"name": "keyword.control.parallel"

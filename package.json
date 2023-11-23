@@ -30,6 +30,12 @@
 					"parallel"
 				]
 			}
-		]
+		],
+		"snippets": [
+            {
+                "language": "parallel",
+                "path": "./snippets.json"
+            }
+        ]
 	}
 }
