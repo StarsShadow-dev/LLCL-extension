@@ -26,14 +26,9 @@ vscode.languages.registerHoverProvider('parallel', {
 			compilerPath = `${homedir}/.Parallel_Lang/Parallel-lang`;
 		}
 		
-		// get the modulePath
-		const modulePath = document.uri.path.split("/");
-		modulePath.pop();
-		console.log(text.length, "\n", modulePath.join("/"), document.uri.path);
-		
 		return new Promise((resolve, reject) => {
 			try {
-				const args = ["query", "hover", modulePath.join("/"), document.uri.path, text.length, line, character];
+				const args = ["query", "hover", document.uri.path, text.length, line, character];
 				console.log(compilerPath, args);
 				const childProcess = child_process.spawn(compilerPath, args);
 				
@@ -92,15 +87,9 @@ vscode.languages.registerCompletionItemProvider('parallel', {
 			compilerPath = `${homedir}/.Parallel_Lang/Parallel-lang`;
 		}
 		
-		// get the modulePath
-		const modulePath = document.uri.path.split("/");
-		modulePath.pop();
-		console.log(text.length, "\n", modulePath.join("/"), document.uri.path);
-		
 		return new Promise((resolve, reject) => {
-			
 			try {
-				const args = ["query", "suggestions", modulePath.join("/"), document.uri.path, text.length, line, character];
+				const args = ["query", "suggestions", document.uri.path, text.length, line, character];
 				console.log(compilerPath, args);
 				const childProcess = child_process.spawn(compilerPath, args);
 				
