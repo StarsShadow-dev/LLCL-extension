@@ -1,10 +1,10 @@
 {
-	"name": "parallel",
-	"displayName": "Parallel-lang VS Code Extension",
+	"name": "llcl_vscode",
+	"displayName": "LLCL VS Code Extension",
 	"description": "extension for VS Code",
 	"version": "0.0.1",
 	"publisher": "starsshadowdev",
-	"repository": "https://github.com/StarsShadow-dev/Parallel-lang-extension",
+	"repository": "https://github.com/StarsShadow-dev/LLCL-extension",
 	"engines": {
 		"vscode": "^1.74.0"
 	},
@@ -15,36 +15,36 @@
 	"contributes": {
 		"languages": [
 			{
-				"id": "parallel",
+				"id": "llcl",
 				"extensions": [
-					".parallel"
+					".llcl"
 				],
 				"configuration": "./language-configuration.json"
 			}
 		],
 		"grammars": [
 			{
-				"language": "parallel",
-				"scopeName": "source.parallel",
+				"language": "llcl",
+				"scopeName": "source.llcl",
 				"path": "./grammar.json",
 				"injectTo": [
-					"parallel"
+					"llcl"
 				]
 			}
 		],
 		"snippets": [
             {
-                "language": "parallel",
+                "language": "llcl",
                 "path": "./snippets.json"
             }
         ],
 		"configuration": [
 			{
 				"id": "compilerPath",
-				"title": "Parallel-lang",
+				"title": "LLCL_VScode",
 				"order": 1,
 				"properties": {
-					"conf.parallel.compilerPath": {
+					"conf.llcl_vscode.compilerPath": {
 						"type": "string"
 					}
 				}

@@ -5,62 +5,62 @@ const child_process = require('child_process')
 const fs = require("fs");
 const { homedir } = require('os');
 
-console.log("setting up the parallel-lang VS Code Extension");
+console.log("setting up the LLCL VS Code Extension");
 
-vscode.languages.registerHoverProvider('parallel', {
-	async provideHover(document, position, token) {
-		// get the document text (it may not have been saved to the file system yet)
-		const text = document.getText();
+// vscode.languages.registerHoverProvider('llcl', {
+// 	async provideHover(document, position, token) {
+// 		// get the document text (it may not have been saved to the file system yet)
+// 		const text = document.getText();
 		
-		// get the hover location
-		const line = position.e;
-		const character = position.c;
-		console.log("character", character, "line", line);
+// 		// get the hover location
+// 		const line = position.e;
+// 		const character = position.c;
+// 		console.log("character", character, "line", line);
 		
-		// get the compilerPath
-		const compilerPathConfiguration = vscode.workspace.getConfiguration().get('conf.parallel.compilerPath')
-		let compilerPath = "";
-		if (compilerPathConfiguration.length > 0) {
-			compilerPath = `${vscode.workspace.workspaceFolders[0].uri.path}${compilerPathConfiguration}`;
-		} else {
-			compilerPath = `${homedir}/.Parallel_Lang/Parallel-lang`;
-		}
+// 		// get the compilerPath
+// 		const compilerPathConfiguration = vscode.workspace.getConfiguration().get('conf.llcl_vscode.compilerPath')
+// 		let compilerPath = "";
+// 		if (compilerPathConfiguration.length > 0) {
+// 			compilerPath = `${vscode.workspace.workspaceFolders[0].uri.path}${compilerPathConfiguration}`;
+// 		} else {
+// 			compilerPath = `${homedir}/.LLCL/LLCL`;
+// 		}
 		
-		return new Promise((resolve, reject) => {
-			try {
-				const args = ["query", "hover", document.uri.path, text.length, line, character];
-				console.log(compilerPath, args);
-				const childProcess = child_process.spawn(compilerPath, args);
+// 		return new Promise((resolve, reject) => {
+// 			try {
+// 				const args = ["query", "hover", document.uri.path, text.length, line, character];
+// 				console.log(compilerPath, args);
+// 				const childProcess = child_process.spawn(compilerPath, args);
 				
-				childProcess.stdin.write(text);
+// 				childProcess.stdin.write(text);
 				
-				childProcess.on('error', (error) => {
-					console.log(`error: ${error}`);
-				});
+// 				childProcess.on('error', (error) => {
+// 					console.log(`error: ${error}`);
+// 				});
 				
-				childProcess.stdout.on('data', (data) => {
-					console.log(`stdout: ${data}`);
-					resolve({
-						contents: [`${data}`]
-					});
-				});
+// 				childProcess.stdout.on('data', (data) => {
+// 					console.log(`stdout: ${data}`);
+// 					resolve({
+// 						contents: [`${data}`]
+// 					});
+// 				});
 				
-				childProcess.on('close', (code) => {
-					console.log(`process exited with code ${code}`);
-					if (code != 0) {
-						resolve({
-							contents: ["childProcess error"]
-						});
-					} else {
-						resolve(undefined);
-					}
-				});
-			} catch (error) {
-				console.log(error);
-			}
-		})
-	}
-});
+// 				childProcess.on('close', (code) => {
+// 					console.log(`process exited with code ${code}`);
+// 					if (code != 0) {
+// 						resolve({
+// 							contents: ["childProcess error"]
+// 						});
+// 					} else {
+// 						resolve(undefined);
+// 					}
+// 				});
+// 			} catch (error) {
+// 				console.log(error);
+// 			}
+// 		})
+// 	}
+// });
 
 function getNewCompletion(completionItemKind, label, documentationString) {
 	const newCompletion = new vscode.CompletionItem(label, completionItemKind);
@@ -68,7 +68,7 @@ function getNewCompletion(completionItemKind, label, documentationString) {
 	return newCompletion;
 }
 
-vscode.languages.registerCompletionItemProvider('parallel', {
+vscode.languages.registerCompletionItemProvider('llcl', {
 	async provideCompletionItems(document, position, token, context) {
 		console.log("position", position);
 		
@@ -79,12 +79,12 @@ vscode.languages.registerCompletionItemProvider('parallel', {
 		console.log("character", character, "line", line);
 		
 		// get the compilerPath
-		const compilerPathConfiguration = vscode.workspace.getConfiguration().get('conf.parallel.compilerPath')
+		const compilerPathConfiguration = vscode.workspace.getConfiguration().get('conf.llcl_vscode.compilerPath')
 		let compilerPath = "";
 		if (compilerPathConfiguration.length > 0) {
 			compilerPath = `${vscode.workspace.workspaceFolders[0].uri.path}${compilerPathConfiguration}`;
 		} else {
-			compilerPath = `${homedir}/.Parallel_Lang/Parallel-lang`;
+			compilerPath = `${homedir}/.LLCL/LLCL`;
 		}
 		
 		return new Promise((resolve, reject) => {
