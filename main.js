@@ -71,6 +71,10 @@ function getNewCompletion(completionItemKind, label, documentationString) {
 vscode.languages.registerCompletionItemProvider('llcl', {
 	async provideCompletionItems(document, position, token, context) {
 		console.log("position", position);
+		// console.log("token", token);
+		// console.log("context", context);
+		
+		console.time("registerCompletionItemProvider");
 		
 		const text = document.getText();
 		
@@ -88,6 +92,7 @@ vscode.languages.registerCompletionItemProvider('llcl', {
 		}
 		
 		return new Promise((resolve, reject) => {
+			let gotData = false;
 			try {
 				const args = ["query", "suggestions", document.uri.path, text.length, line, character];
 				console.log(compilerPath, args);
@@ -100,6 +105,7 @@ vscode.languages.registerCompletionItemProvider('llcl', {
 				});
 				
 				childProcess.stdout.on('data', (data) => {
+					gotData = true;
 					try {
 						let completionItems = [];
 						
@@ -123,13 +129,17 @@ vscode.languages.registerCompletionItemProvider('llcl', {
 				});
 				
 				childProcess.on('close', (code) => {
+					console.timeEnd("registerCompletionItemProvider");
+					
 					console.log(`process exited with code ${code}`);
-					if (code != 0) {
-						resolve({
-							contents: ["childProcess error"]
-						});
-					} else {
-						resolve(undefined);
+					if (!gotData) {
+						if (code != 0) {
+							resolve({
+								contents: ["childProcess error"]
+							});
+						} else {
+							resolve(undefined);
+						}	
 					}
 				});
 			} catch (error) {
