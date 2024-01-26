@@ -1,17 +1,45 @@
 'use strict';
 
 const vscode = require('vscode');
-const child_process = require('child_process')
+const child_process = require('child_process');
 const fs = require("fs");
 const { homedir } = require('os');
 
 console.log("setting up the LLCL VS Code Extension");
 
+let diagnosticList = [];
+
 let diagnosticCollection = vscode.languages.createDiagnosticCollection('go');
 
+function addDiagnostics(uri, array) {
+	diagnosticList = [];
+	
+	for (let i = 0; i < array.length; i++) {
+		const e = array[i];
+		if (e[0] == 0) {
+			diagnosticList.push(
+				new vscode.Diagnostic(new vscode.Range(
+					new vscode.Position(e[1] - 1, e[2]),
+					new vscode.Position(e[1] - 1, e[3])),
+					e[4]
+				)
+			);
+		}
+	}
+	
+	diagnosticCollection.clear();
+	diagnosticCollection.set(uri, diagnosticList);
+}
+
+function getText(document) {
+	// "\n" ????????
+	return document.getText() + "\n"
+}
+
 function getCompilerPath() {
-	const compilerPathConfiguration = vscode.workspace.getConfiguration().get('conf.llcl_vscode.compilerPath')
 	let compilerPath = "";
+	
+	const compilerPathConfiguration = vscode.workspace.getConfiguration().get('conf.llcl_vscode.compilerPath')
 	if (compilerPathConfiguration.length > 0) {
 		if (compilerPathConfiguration[0] == "~") {
 			let newCompilerPath = compilerPathConfiguration.split("");
@@ -23,18 +51,19 @@ function getCompilerPath() {
 	} else {
 		compilerPath = `${homedir}/.LLCL/LLCL`;
 	}
+	
 	return compilerPath;
 }
 
 vscode.languages.registerHoverProvider('llcl', {
 	async provideHover(document, position, token) {
 		// get the document text (it may not have been saved to the file system yet)
-		const text = document.getText();
+		const text = getText(document);
 		
 		// get the hover location
 		const line = position.line + 1;
-		const character = position.c;
-		console.log("line", line, "character", character);
+		const character = position.character;
+		console.log("line", line, "character", character, text);
 		
 		// get the compilerPath
 		const compilerPath = getCompilerPath();
@@ -43,11 +72,11 @@ vscode.languages.registerHoverProvider('llcl', {
 			let gotData = false;
 			
 			try {
-				const args = ["query", "hover", document.uri.path, text.length, line, character];
+				const args = ["query", "hover", document.uri.path, text.length + 1, line, character];
 				console.log(compilerPath, args);
 				const childProcess = child_process.spawn(compilerPath, args);
 				
-				childProcess.stdin.write(text);
+				childProcess.stdin.write(text + "\n");
 				
 				childProcess.on('error', (error) => {
 					console.log(`error: ${error}`);
@@ -60,27 +89,16 @@ vscode.languages.registerHoverProvider('llcl', {
 					try {
 						const array = JSON.parse(`${data}`);
 						
-						let contents = [];
+						addDiagnostics(document.uri, array);
 						
-						let diagnosticList = [];
+						let contents = [];
 						
 						for (let i = 0; i < array.length; i++) {
 							const e = array[i];
-							if (e[0] == 0) {
-								diagnosticList.push(
-									new vscode.Diagnostic(new vscode.Range(
-										new vscode.Position(e[1] - 1, e[2]),
-										new vscode.Position(e[1] - 1, e[3])),
-										e[4]
-									)
-								);
-							} else if (e[0] == 2) {
+							if (e[0] == 2) {
 								contents.push(new vscode.MarkdownString(e[3]));
 							}
 						}
-						
-						diagnosticCollection.clear();
-						diagnosticCollection.set(document.uri, diagnosticList);
 						
 						resolve({
 							contents: contents
@@ -123,10 +141,10 @@ function getNewCompletion(completionItemKind, label, documentationString) {
 vscode.languages.registerCompletionItemProvider('llcl', {
 	async provideCompletionItems(document, position, token, context) {
 		// get the document text (it may not have been saved to the file system yet)
-		const text = document.getText();
+		const text = getText(document);
 		
 		const line = position.line + 1;
-		const character = position.e;
+		const character = position.character;
 		console.log("line", line, "character", character);
 		
 		// get the compilerPath
@@ -150,31 +168,19 @@ vscode.languages.registerCompletionItemProvider('llcl', {
 					
 					gotData = true;
 					try {
-						let completionItems = [];
-						
 						const array = JSON.parse(`${data}`);
 						
-						let diagnosticList = [];
+						addDiagnostics(document.uri, array);
+						
+						let completionItems = [];
 						
 						for (let i = 0; i < array.length; i++) {
 							const e = array[i];
-							if (e[0] == 0) {
-								diagnosticList.push(
-									new vscode.Diagnostic(new vscode.Range(
-										new vscode.Position(e[1] - 1, e[2]),
-										new vscode.Position(e[1] - 1, e[3])),
-										e[4]
-									)
-								);
-							} else if (e[0] == 2) {
+							if (e[0] == 2) {
 								completionItems.push(getNewCompletion(e[1], e[2], e[3]))	
 							}
 						}
 						
-						diagnosticCollection.clear();
-						diagnosticCollection.set(document.uri, diagnosticList);
-						
-						console.log("completionItems", completionItems);
 						resolve(completionItems);
 					} catch (error) {
 						console.log(error);
@@ -196,3 +202,8 @@ vscode.languages.registerCompletionItemProvider('llcl', {
 		})
 	}
 });
+
+// vscode.workspace.onDidSaveTextDocument((event) => {
+// 	const newText = event.getText();
+// 	console.log(newText);
+// })
