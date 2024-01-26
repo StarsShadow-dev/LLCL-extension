@@ -1,10 +1,9 @@
 {
-	"name": "llcl_vscode",
+	"name": "llcl",
 	"displayName": "LLCL VS Code Extension",
 	"description": "extension for VS Code",
 	"version": "0.0.1",
-	"publisher": "starsshadowdev",
-	"repository": "https://github.com/StarsShadow-dev/LLCL-extension",
+	
 	"engines": {
 		"vscode": "^1.74.0"
 	},
