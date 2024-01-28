@@ -27,7 +27,6 @@ function addDiagnostics(uri, array) {
 		}
 	}
 	
-	diagnosticCollection.clear();
 	diagnosticCollection.set(uri, diagnosticList);
 }
 
@@ -115,6 +114,7 @@ vscode.languages.registerHoverProvider('llcl', {
 					console.log(`process exited with code ${code}`);
 					if (!gotData) {
 						if (code != 0) {
+							diagnosticCollection.clear();
 							resolve({
 								contents: ["childProcess error"]
 							});
@@ -189,8 +189,6 @@ vscode.languages.registerCompletionItemProvider('llcl', {
 				});
 				
 				childProcess.on('close', (code) => {
-					// console.timeEnd("registerCompletionItemProvider");
-					
 					console.log(`process exited with code ${code}`);
 					if (!gotData) {
 						resolve(undefined);
@@ -203,7 +201,65 @@ vscode.languages.registerCompletionItemProvider('llcl', {
 	}
 });
 
-// vscode.workspace.onDidSaveTextDocument((event) => {
-// 	const newText = event.getText();
-// 	console.log(newText);
+function reloadDiagnostics(uri, text) {
+	const compilerPath = getCompilerPath();
+	
+	let gotData = false;
+	try {
+		const args = ["query", "diagnostics_only", uri.path, text.length];
+		console.log(compilerPath, args);
+		const childProcess = child_process.spawn(compilerPath, args);
+		
+		childProcess.stdin.write(text);
+		
+		childProcess.on('error', (error) => {
+			console.log(`error: ${error}`);
+		});
+		
+		childProcess.stdout.on('data', (data) => {
+			console.log("diagnostics_only data", `${data}`);
+			
+			gotData = true;
+			try {
+				const array = JSON.parse(`${data}`);
+				
+				addDiagnostics(uri, array);
+			} catch (error) {
+				console.log(error);
+			}
+		});
+		
+		childProcess.on('close', (code) => {
+			console.log(`process exited with code ${code}`);
+		});
+	} catch (error) {
+		console.log(error);
+	}
+}
+
+// vscode.workspace.onDidOpenTextDocument((document) => {
+// 	reloadDiagnostics(document.uri, document.getText());
 // })
+
+// vscode.workspace.onDidSaveTextDocument((document) => {
+// 	reloadDiagnostics(document.uri, document.getText());
+// })
+
+vscode.workspace.onDidChangeTextDocument(event => {
+	reloadDiagnostics(event.document.uri, event.document.getText());
+});
+
+vscode.window.onDidChangeVisibleTextEditors((editors) => {
+	// console.log("editors", editors);
+	diagnosticCollection.clear();
+	
+	editors.forEach(editor => {
+		if (editor.document.languageId == "llcl") {
+			reloadDiagnostics(editor.document.uri, editor.document.getText());	
+		}
+	});
+});
+
+// vscode.window.onDidChangeActiveTextEditor((editor) => {
+// 	reloadDiagnostics(editor.document.uri, editor.document.getText());
+// });
