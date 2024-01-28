@@ -237,29 +237,43 @@ function reloadDiagnostics(uri, text) {
 	}
 }
 
-// vscode.workspace.onDidOpenTextDocument((document) => {
-// 	reloadDiagnostics(document.uri, document.getText());
-// })
-
 // vscode.workspace.onDidSaveTextDocument((document) => {
 // 	reloadDiagnostics(document.uri, document.getText());
 // })
 
-vscode.workspace.onDidChangeTextDocument(event => {
-	reloadDiagnostics(event.document.uri, event.document.getText());
-});
-
-vscode.window.onDidChangeVisibleTextEditors((editors) => {
-	// console.log("editors", editors);
-	diagnosticCollection.clear();
+// vscode.window.onDidChangeVisibleTextEditors((editors) => {
+// 	// console.log("editors", editors);
+// 	diagnosticCollection.clear();
 	
-	editors.forEach(editor => {
-		if (editor.document.languageId == "llcl") {
-			reloadDiagnostics(editor.document.uri, editor.document.getText());	
-		}
-	});
-});
+// 	editors.forEach(editor => {
+// 		if (editor.document.languageId == "llcl") {
+// 			reloadDiagnostics(editor.document.uri, editor.document.getText());	
+// 		}
+// 	});
+// });
 
 // vscode.window.onDidChangeActiveTextEditor((editor) => {
 // 	reloadDiagnostics(editor.document.uri, editor.document.getText());
 // });
+
+// start by looping over every file
+vscode.workspace.textDocuments.forEach((document) => {
+	if (document.languageId == "llcl") {
+		reloadDiagnostics(document.uri, document.getText());	
+	}
+})
+
+// when a new file is opened
+vscode.workspace.onDidOpenTextDocument((document) => {
+	reloadDiagnostics(document.uri, document.getText());
+})
+
+// when a file is changed
+vscode.workspace.onDidChangeTextDocument(event => {
+	reloadDiagnostics(event.document.uri, event.document.getText());
+});
+
+// clear the errors when a file is closed
+vscode.workspace.onDidCloseTextDocument((document) => {
+	diagnosticCollection.set(document.uri, undefined);
+})
