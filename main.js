@@ -17,13 +17,13 @@ function addDiagnostics(uri, array) {
 	for (let i = 0; i < array.length; i++) {
 		const e = array[i];
 		if (e[0] == 0) {
-			diagnosticList.push(
-				new vscode.Diagnostic(new vscode.Range(
-					new vscode.Position(e[1] - 1, e[2]),
-					new vscode.Position(e[1] - 1, e[3])),
-					e[4]
-				)
-			);
+			let diagnostic = new vscode.Diagnostic(new vscode.Range(
+				new vscode.Position(e[1] - 1, e[2]),
+				new vscode.Position(e[1] - 1, e[3])),
+				`error: ${e[4]};\n${e[5]}`
+			)
+			
+			diagnosticList.push(diagnostic);
 		}
 	}
 	
