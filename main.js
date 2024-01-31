@@ -30,11 +30,6 @@ function addDiagnostics(uri, array) {
 	diagnosticCollection.set(uri, diagnosticList);
 }
 
-function getText(document) {
-	// "\n" ????????
-	return document.getText() + "\n"
-}
-
 function getCompilerPath() {
 	let compilerPath = "";
 	
@@ -57,12 +52,12 @@ function getCompilerPath() {
 vscode.languages.registerHoverProvider('llcl', {
 	async provideHover(document, position, token) {
 		// get the document text (it may not have been saved to the file system yet)
-		const text = getText(document);
+		const text = document.getText();
 		
 		// get the hover location
 		const line = position.line + 1;
 		const character = position.character;
-		console.log("line", line, "character", character, text);
+		console.log("line", line, "character", character);
 		
 		// get the compilerPath
 		const compilerPath = getCompilerPath();
@@ -141,7 +136,7 @@ function getNewCompletion(completionItemKind, label, documentationString) {
 vscode.languages.registerCompletionItemProvider('llcl', {
 	async provideCompletionItems(document, position, token, context) {
 		// get the document text (it may not have been saved to the file system yet)
-		const text = getText(document);
+		const text = document.getText();
 		
 		const line = position.line + 1;
 		const character = position.character;
@@ -263,17 +258,23 @@ vscode.workspace.textDocuments.forEach((document) => {
 	}
 })
 
-// when a new file is opened
+// when a file is opened
 vscode.workspace.onDidOpenTextDocument((document) => {
-	reloadDiagnostics(document.uri, document.getText());
+	if (document.languageId == "llcl") {
+		reloadDiagnostics(document.uri, document.getText());
+	}
 })
 
 // when a file is changed
 vscode.workspace.onDidChangeTextDocument(event => {
-	reloadDiagnostics(event.document.uri, event.document.getText());
+	if (event.document.languageId == "llcl") {
+		reloadDiagnostics(event.document.uri, event.document.getText());
+	}
 });
 
 // clear the errors when a file is closed
 vscode.workspace.onDidCloseTextDocument((document) => {
-	diagnosticCollection.set(document.uri, undefined);
+	if (document.languageId == "llcl") {
+		diagnosticCollection.set(document.uri, undefined);
+	}
 })
