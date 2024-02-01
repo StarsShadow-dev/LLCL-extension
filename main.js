@@ -51,6 +51,51 @@ function getCompilerPath() {
 	return compilerPath;
 }
 
+function runCompiler(args, stdin, callBack) {
+	const compilerPath = getCompilerPath();
+	
+	let gotData = false;
+	try {
+		console.log(compilerPath, args);
+		const childProcess = child_process.spawn(compilerPath, args);
+		
+		childProcess.stdin.write(stdin);
+		
+		childProcess.on('error', (error) => {
+			console.log(`compiler error: ${error}`);
+		});
+		
+		childProcess.stdout.on('data', (stdout) => {
+			console.log("compiler stdout", `${stdout}`);
+			
+			gotData = true;
+			try {
+				callBack(stdout);
+			} catch (error) {
+				console.log(error);
+			}
+		});
+		
+		childProcess.on('close', (code) => {
+			console.log(`compiler exited with code: ${code}`);
+		});
+	} catch (error) {
+		console.log(error);
+	}
+}
+
+function reloadDiagnostics(uri, text) {
+	runCompiler(["query", "diagnostics_only", uri.path, text.length], text, (stdout) => {
+		const array = JSON.parse(`${stdout}`);
+		console.log("array:", array);
+		addDiagnostics(uri, array);
+	});
+}
+
+//
+// vscode.languages
+//
+
 vscode.languages.registerHoverProvider('llcl', {
 	async provideHover(document, position, token) {
 		// get the document text (it may not have been saved to the file system yet)
@@ -198,46 +243,14 @@ vscode.languages.registerCompletionItemProvider('llcl', {
 	}
 });
 
-function runCompiler(args, stdin, callBack) {
-	const compilerPath = getCompilerPath();
-	
-	let gotData = false;
-	try {
-		console.log(compilerPath, args);
-		const childProcess = child_process.spawn(compilerPath, args);
-		
-		childProcess.stdin.write(stdin);
-		
-		childProcess.on('error', (error) => {
-			console.log(`compiler error: ${error}`);
-		});
-		
-		childProcess.stdout.on('data', (stdout) => {
-			console.log("compiler stdout", `${stdout}`);
-			
-			gotData = true;
-			try {
-				callBack(stdout);
-			} catch (error) {
-				console.log(error);
-			}
-		});
-		
-		childProcess.on('close', (code) => {
-			console.log(`compiler exited with code: ${code}`);
-		});
-	} catch (error) {
-		console.log(error);
-	}
-}
-
-function reloadDiagnostics(uri, text) {
-	runCompiler(["query", "diagnostics_only", uri.path, text.length], text, (stdout) => {
-		const array = JSON.parse(`${stdout}`);
-		console.log("array:", array);
-		addDiagnostics(uri, array);
-	});
-}
+vscode.languages.registerCodeLensProvider('llcl', {
+	provideCodeLenses(document, token) {
+		reloadDiagnostics(document.uri, document.getText());
+	},
+	// resolveCodeLens(codeLens, token) {
+	// 	console.log("resolveCodeLens", codeLens);
+	// }
+});
 
 // vscode.workspace.onDidSaveTextDocument((document) => {
 // 	reloadDiagnostics(document.uri, document.getText());
@@ -259,25 +272,25 @@ function reloadDiagnostics(uri, text) {
 // });
 
 // start by looping over every file
-vscode.workspace.textDocuments.forEach((document) => {
-	if (document.languageId == "llcl") {
-		reloadDiagnostics(document.uri, document.getText());	
-	}
-})
+// vscode.workspace.textDocuments.forEach((document) => {
+// 	if (document.languageId == "llcl") {
+// 		reloadDiagnostics(document.uri, document.getText());	
+// 	}
+// })
 
-// when a file is opened
-vscode.workspace.onDidOpenTextDocument((document) => {
-	if (document.languageId == "llcl") {
-		reloadDiagnostics(document.uri, document.getText());
-	}
-})
+// // when a file is opened
+// vscode.workspace.onDidOpenTextDocument((document) => {
+// 	if (document.languageId == "llcl") {
+// 		reloadDiagnostics(document.uri, document.getText());
+// 	}
+// })
 
-// when a file is changed
-vscode.workspace.onDidChangeTextDocument(event => {
-	if (event.document.languageId == "llcl") {
-		reloadDiagnostics(event.document.uri, event.document.getText());
-	}
-});
+// // when a file is changed
+// vscode.workspace.onDidChangeTextDocument(event => {
+// 	if (event.document.languageId == "llcl") {
+// 		reloadDiagnostics(event.document.uri, event.document.getText());
+// 	}
+// });
 
 // clear the errors when a file is closed
 vscode.workspace.onDidCloseTextDocument((document) => {
@@ -290,10 +303,10 @@ vscode.workspace.onDidCloseTextDocument((document) => {
 // commands
 //
 
-let documentTextCallBack = () => {console.log("error!!!")};
+let documentTextCallBack = () => {};
 
 vscode.workspace.registerTextDocumentContentProvider("llcl_document", {
-	provideTextDocumentContent: (uri, token) => {
+	provideTextDocumentContent(uri, token) {
 		console.log("uri", uri);
 		return documentTextCallBack();
 	}
