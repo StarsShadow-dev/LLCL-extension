@@ -48,6 +48,12 @@
 					}
 				}
 			}
+		],
+		"commands": [
+			{
+				"command": "extension.llcl.showLLVMIR",
+				"title": "llcl: Show LLVMIR"
+			}
 		]
 	}
 }

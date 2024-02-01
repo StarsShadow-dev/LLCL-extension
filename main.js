@@ -17,9 +17,11 @@ function addDiagnostics(uri, array) {
 	for (let i = 0; i < array.length; i++) {
 		const e = array[i];
 		if (e[0] == 0) {
-			let diagnostic = new vscode.Diagnostic(new vscode.Range(
-				new vscode.Position(e[1] - 1, e[2]),
-				new vscode.Position(e[1] - 1, e[3])),
+			let diagnostic = new vscode.Diagnostic(
+				new vscode.Range(
+					new vscode.Position(e[1] - 1, e[2]),
+					new vscode.Position(e[1] - 1, e[3])
+				),
 				`error: ${e[4]};\n${e[5]}`
 			)
 			
@@ -196,40 +198,45 @@ vscode.languages.registerCompletionItemProvider('llcl', {
 	}
 });
 
-function reloadDiagnostics(uri, text) {
+function runCompiler(args, stdin, callBack) {
 	const compilerPath = getCompilerPath();
 	
 	let gotData = false;
 	try {
-		const args = ["query", "diagnostics_only", uri.path, text.length];
 		console.log(compilerPath, args);
 		const childProcess = child_process.spawn(compilerPath, args);
 		
-		childProcess.stdin.write(text);
+		childProcess.stdin.write(stdin);
 		
 		childProcess.on('error', (error) => {
-			console.log(`error: ${error}`);
+			console.log(`compiler error: ${error}`);
 		});
 		
-		childProcess.stdout.on('data', (data) => {
-			console.log("diagnostics_only data", `${data}`);
+		childProcess.stdout.on('data', (stdout) => {
+			console.log("compiler stdout", `${stdout}`);
 			
 			gotData = true;
 			try {
-				const array = JSON.parse(`${data}`);
-				
-				addDiagnostics(uri, array);
+				callBack(stdout);
 			} catch (error) {
 				console.log(error);
 			}
 		});
 		
 		childProcess.on('close', (code) => {
-			console.log(`process exited with code ${code}`);
+			console.log(`compiler exited with code: ${code}`);
 		});
 	} catch (error) {
 		console.log(error);
 	}
+}
+
+function reloadDiagnostics(uri, text) {
+	runCompiler(["query", "diagnostics_only", uri.path, text.length], text, (stdout) => {
+		const array = JSON.parse(`${stdout}`);
+		console.log("array:", array);
+		addDiagnostics(uri, array);
+	});
 }
 
 // vscode.workspace.onDidSaveTextDocument((document) => {
@@ -277,4 +284,47 @@ vscode.workspace.onDidCloseTextDocument((document) => {
 	if (document.languageId == "llcl") {
 		diagnosticCollection.set(document.uri, undefined);
 	}
+})
+
+//
+// commands
+//
+
+let documentTextCallBack = () => {console.log("error!!!")};
+
+vscode.workspace.registerTextDocumentContentProvider("llcl_document", {
+	provideTextDocumentContent: (uri, token) => {
+		console.log("uri", uri);
+		return documentTextCallBack();
+	}
+});
+
+async function openDocument(name, callBack) {
+	documentTextCallBack = callBack;
+	
+	const uri = vscode.Uri.parse(`llcl_document:${name}`);
+	const doc = await vscode.workspace.openTextDocument(uri);
+	await vscode.window.showTextDocument(doc, {});
+}
+
+vscode.commands.registerCommand('extension.llcl.showLLVMIR', async () => {
+	let editor = vscode.window.activeTextEditor;
+	if (editor == undefined) {
+		vscode.window.showErrorMessage('Editor is undefined!');
+		return;
+	}
+	
+	if (editor.document.languageId != "llcl") {
+		vscode.window.showErrorMessage('editor.document.languageId != "llcl"');
+		return;
+	}
+	
+	let text = editor.document.getText();
+	
+	runCompiler(["query", "diagnostics_only", editor.document.uri.path, text.length, "-ir"], text, (stdout) => {
+		let textUri = editor.document.uri.path.split("/").pop().split(".").shift() + ".txt";
+		openDocument(textUri, () => {
+			return `${stdout}`;
+		})
+	})
 })
