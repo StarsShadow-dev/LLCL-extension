@@ -77,6 +77,9 @@ function runCompiler(args, stdin, callBack) {
 		});
 		
 		childProcess.on('close', (code) => {
+			if (!gotData) {
+				callBack(null);
+			}
 			console.log(`compiler exited with code: ${code}`);
 		});
 	} catch (error) {
@@ -106,69 +109,39 @@ vscode.languages.registerHoverProvider('llcl', {
 		const character = position.character;
 		console.log("line", line, "character", character);
 		
-		// get the compilerPath
-		const compilerPath = getCompilerPath();
-		
 		return new Promise((resolve, reject) => {
-			let gotData = false;
-			
-			try {
-				const args = ["query", "hover", document.uri.path, text.length + 1, line, character];
-				console.log(compilerPath, args);
-				const childProcess = child_process.spawn(compilerPath, args);
-				
-				childProcess.stdin.write(text + "\n");
-				
-				childProcess.on('error', (error) => {
-					console.log(`error: ${error}`);
-				});
-				
-				childProcess.stdout.on('data', (data) => {
-					console.log("hover data", `${data}`, JSON.parse(`${data}`));
+			runCompiler(["query", "hover", document.uri.path, text.length, line, character], text, (stdout) => {
+				if (stdout == null) {
+					diagnosticCollection.clear();
+					resolve({
+						contents: ["childProcess error"]
+					});
+				}
+				try {
+					const array = JSON.parse(`${stdout}`);
 					
-					gotData = true;
-					try {
-						const array = JSON.parse(`${data}`);
-						
-						addDiagnostics(document.uri, array);
-						
-						let contents = [];
-						
-						for (let i = 0; i < array.length; i++) {
-							const e = array[i];
-							if (e[0] == 2) {
-								contents.push(new vscode.MarkdownString(e[3]));
-							}
-						}
-						
-						resolve({
-							contents: contents
-						});
-					} catch (error) {
-						console.log("error", error);
-						resolve({
-							contents: ["childProcess stdout error"]
-						});
-					}
-				});
-				
-				childProcess.on('close', (code) => {
-					console.log(`process exited with code ${code}`);
-					if (!gotData) {
-						if (code != 0) {
-							diagnosticCollection.clear();
-							resolve({
-								contents: ["childProcess error"]
-							});
-						} else {
-							resolve(undefined);
+					addDiagnostics(document.uri, array);
+					
+					let contents = [];
+					
+					for (let i = 0; i < array.length; i++) {
+						const e = array[i];
+						if (e[0] == 2) {
+							contents.push(new vscode.MarkdownString(e[3]));
 						}
 					}
-				});
-			} catch (error) {
-				console.log(error);
-			}
-		})
+					
+					resolve({
+						contents: contents
+					});
+				} catch (error) {
+					console.log("error", error);
+					resolve({
+						contents: ["provideHover error"]
+					});
+				}
+			})
+		});
 	}
 });
 
@@ -193,52 +166,27 @@ vscode.languages.registerCompletionItemProvider('llcl', {
 		const compilerPath = getCompilerPath();
 		
 		return new Promise((resolve, reject) => {
-			let gotData = false;
-			try {
-				const args = ["query", "suggestions", document.uri.path, text.length, line, character];
-				console.log(compilerPath, args);
-				const childProcess = child_process.spawn(compilerPath, args);
-				
-				childProcess.stdin.write(text);
-				
-				childProcess.on('error', (error) => {
-					console.log(`error: ${error}`);
-				});
-				
-				childProcess.stdout.on('data', (data) => {
-					console.log("suggestions data", `${data}`);
+			runCompiler(["query", "suggestions", document.uri.path, text.length, line, character], text, (stdout) => {
+				try {
+					const array = JSON.parse(`${stdout}`);
 					
-					gotData = true;
-					try {
-						const array = JSON.parse(`${data}`);
-						
-						addDiagnostics(document.uri, array);
-						
-						let completionItems = [];
-						
-						for (let i = 0; i < array.length; i++) {
-							const e = array[i];
-							if (e[0] == 2) {
-								completionItems.push(getNewCompletion(e[1], e[2], e[3]))	
-							}
+					addDiagnostics(document.uri, array);
+					
+					let completionItems = [];
+					
+					for (let i = 0; i < array.length; i++) {
+						const e = array[i];
+						if (e[0] == 2) {
+							completionItems.push(getNewCompletion(e[1], e[2], e[3]))	
 						}
-						
-						resolve(completionItems);
-					} catch (error) {
-						console.log(error);
-						resolve(undefined);
 					}
-				});
-				
-				childProcess.on('close', (code) => {
-					console.log(`process exited with code ${code}`);
-					if (!gotData) {
-						resolve(undefined);
-					}
-				});
-			} catch (error) {
-				console.log(error);
-			}
+					
+					resolve(completionItems);
+				} catch (error) {
+					console.error(error);
+					resolve(undefined);
+				}
+			});
 		})
 	}
 });
