@@ -253,9 +253,11 @@ vscode.workspace.onDidCloseTextDocument((document) => {
 
 let documentTextCallBack = () => {};
 
+let textContentDidChangeEmitter = new vscode.EventEmitter();
+
 vscode.workspace.registerTextDocumentContentProvider("llcl_document", {
+	onDidChange: textContentDidChangeEmitter.event,
 	provideTextDocumentContent(uri, token) {
-		console.log("uri", uri);
 		return documentTextCallBack();
 	}
 });
@@ -265,6 +267,7 @@ async function openDocument(name, callBack) {
 	
 	const uri = vscode.Uri.parse(`llcl_document:${name}`);
 	const doc = await vscode.workspace.openTextDocument(uri);
+	textContentDidChangeEmitter.fire(uri);
 	await vscode.window.showTextDocument(doc, {});
 }
 
