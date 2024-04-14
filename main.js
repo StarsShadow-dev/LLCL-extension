@@ -1,5 +1,7 @@
 'use strict';
 
+/*
+
 const vscode = require('vscode');
 const child_process = require('child_process');
 const fs = require("fs");
@@ -29,7 +31,7 @@ function addDiagnostics(uri, array) {
 		}
 	}
 	
-	diagnosticCollection.set(uri, diagnosticList);
+	// diagnosticCollection.set(uri, diagnosticList);
 }
 
 function getCompilerPath() {
@@ -113,9 +115,7 @@ vscode.languages.registerHoverProvider('llcl', {
 			runCompiler(["query", "hover", document.uri.path, text.length, line, character], text, (stdout) => {
 				if (stdout == null) {
 					diagnosticCollection.clear();
-					resolve({
-						contents: ["childProcess error"]
-					});
+					resolve(undefined);
 				}
 				try {
 					const array = JSON.parse(`${stdout}`);
@@ -136,9 +136,10 @@ vscode.languages.registerHoverProvider('llcl', {
 					});
 				} catch (error) {
 					console.log("error", error);
-					resolve({
-						contents: ["provideHover error"]
-					});
+					resolve(undefined);
+					// resolve({
+					// 	contents: ["provideHover error"]
+					// });
 				}
 			})
 		});
@@ -245,7 +246,7 @@ vscode.workspace.onDidCloseTextDocument((document) => {
 	if (document.languageId == "llcl") {
 		diagnosticCollection.set(document.uri, undefined);
 	}
-})
+});
 
 //
 // commands
@@ -291,4 +292,6 @@ vscode.commands.registerCommand('extension.llcl.showLLVMIR', async () => {
 			return `${stdout}`;
 		})
 	})
-})
+});
+
+*/

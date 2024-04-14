@@ -1,11 +1,4 @@
 {
-	"import": {
-		"prefix": "import",	
-		"body": [
-			"import \"$0\""
-		],
-		"description": "import statement"
-	},
 	"if": {
 		"prefix": "if",
 		"body": [
@@ -18,17 +11,10 @@
 	"function": {
 		"prefix": "function",
 		"body": [
-			"function ${1:name}($2): ${3:type} {",
+			"const ${1:name} = fn($2): ${3:type} {",
 			"\t$0",
-			"}"
+			"};"
 		],
 		"description": "function definition"
-	},
-	"var": {
-		"prefix": "var",
-		"body": [
-			"var ${1:name}: ${2:type} = $0"
-		],
-		"description": "variable definition"
 	}
 }

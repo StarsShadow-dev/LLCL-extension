@@ -1,6 +1,6 @@
 {
-	"name": "llcl",
-	"displayName": "LLCL VS Code Extension",
+	"name": "ucl",
+	"displayName": "ucl VS Code Extension",
 	"description": "extension for VS Code",
 	"version": "0.0.1",
 	
@@ -14,45 +14,39 @@
 	"contributes": {
 		"languages": [
 			{
-				"id": "llcl",
+				"id": "ucl",
 				"extensions": [
-					".llcl"
+					".ucl"
 				],
 				"configuration": "./language-configuration.json"
 			}
 		],
 		"grammars": [
 			{
-				"language": "llcl",
-				"scopeName": "source.llcl",
+				"language": "ucl",
+				"scopeName": "source.ucl",
 				"path": "./grammar.json",
 				"injectTo": [
-					"llcl"
+					"ucl"
 				]
 			}
 		],
 		"snippets": [
-            {
-                "language": "llcl",
-                "path": "./snippets.json"
-            }
-        ],
+			{
+				"language": "ucl",
+				"path": "./snippets.json"
+			}
+		],
 		"configuration": [
 			{
 				"id": "compilerPath",
-				"title": "LLCL_VScode",
+				"title": "ucl_VScode",
 				"order": 1,
 				"properties": {
-					"conf.llcl_vscode.compilerPath": {
+					"conf.ucl_vscode.compilerPath": {
 						"type": "string"
 					}
 				}
-			}
-		],
-		"commands": [
-			{
-				"command": "extension.llcl.showLLVMIR",
-				"title": "llcl: Show LLVMIR"
 			}
 		]
 	}
