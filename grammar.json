@@ -53,12 +53,16 @@
 		},
 		
 		"boolean": {
-			"name": "constant.language.boolean.ucl",
-			"match": "(true|false)"
+			"match": "(true|false)[^a-zA-Z0-9\\_]",
+			"captures": {
+				"1": {
+					"name": "constant.language.boolean.ucl"
+				}
+			}
 		},
 		
 		"control_keyword": {
-			"match": "(pub|inline|comptime|unsafe|fn|ret|var|const|struct|if|else|while)[ \t\n;\\(]",
+			"match": "(pub|inline|comptime|unsafe|fn|ret|var|const|field|struct|if|else|while)[^a-zA-Z0-9\\_]",
 			"captures": {
 				"1": {
 					"name": "keyword.control.ucl"

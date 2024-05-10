@@ -3,6 +3,7 @@
 	"displayName": "ucl VS Code Extension",
 	"description": "extension for VS Code",
 	"version": "0.0.1",
+	"publisher": "vscode-samples",
 	
 	"engines": {
 		"vscode": "^1.74.0"
@@ -10,7 +11,13 @@
 	"categories": [
 		"Programming Languages"
 	],
-	"main": "./main.js",
+	"main": "./out/main.js",
+	"devDependencies": {
+		"@types/node": "^20.11.30",
+		"@types/vscode": "*",
+		"typescript": "*"
+	},
+	
 	"contributes": {
 		"languages": [
 			{

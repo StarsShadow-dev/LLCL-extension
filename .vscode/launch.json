@@ -12,6 +12,10 @@
 			"args": [
 				"--extensionDevelopmentPath=${workspaceFolder}"
 			],
+			"preLaunchTask": {
+				"type": "typescript",
+				"tsconfig": "tsconfig.json",
+			},
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js"
 			]
